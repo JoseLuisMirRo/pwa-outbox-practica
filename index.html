@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA Outbox - Sincronización Offline</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="manifest" href="./manifest.json">
+</head>
+<body class="bg-light">
+  <header class="bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+    <h1 class="h4 m-0">Registro de Incidencias en Campo</h1>
+    <span id="badge-red" class="badge bg-success">En Línea</span>
+  </header>
+
+  <main class="container my-4">
+    <section class="card mb-4">
+      <div class="card-body">
+        <h2 class="h5 card-title">Nueva Incidencia</h2>
+        <form id="form-incidencia">
+          <input type="text" id="titulo" class="form-control mb-2" placeholder="Título del reporte (ej. Falla en válvula 4)" required>
+          <textarea id="descripcion" class="form-control mb-2" rows="3" placeholder="Detalle técnico..." required></textarea>
+          <button type="submit" class="btn btn-primary">Enviar Reporte</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5 m-0">Bandeja de Salida (IndexedDB)</h2>
+          <button id="btn-purgar" type="button" class="btn btn-sm btn-outline-secondary">Purgar Sincronizados</button>
+        </div>
+        <ul id="lista-outbox" class="list-group"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="./db-helper.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

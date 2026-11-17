@@ -1,0 +1,7 @@
+{
+  "name": "PWA Outbox - Registro de Incidencias - Jose Luis Miranda Roldan",
+  "short_name": "Outbox",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone"
+}
