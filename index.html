@@ -2,10 +2,26 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>PWA Outbox - Sincronización Offline</title>
   <link rel="stylesheet" href="./styles.css">
   <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#ec4899">
+
+  <!-- iOS: ícono de pantalla de inicio y nombre bajo el ícono -->
+  <link rel="icon" type="image/png" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <meta name="apple-mobile-web-app-title" content="Outbox">
+
+  <style>
+    /* En modo standalone del iPhone el contenido llega hasta el notch: se respeta el área segura */
+    header {
+      padding-top: calc(1rem + env(safe-area-inset-top)) !important;
+    }
+    main {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  </style>
 </head>
 <body class="bg-light">
   <header class="bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
@@ -14,6 +30,11 @@
   </header>
 
   <main class="container my-4">
+    <!-- Guía manual para iPhone: iOS nunca dispara beforeinstallprompt -->
+    <section id="instrucciones-ios" class="alert alert-info mb-4" hidden>
+      <strong>Instalar en iPhone:</strong> pulsa el icono <strong>Compartir</strong> y selecciona <strong>"Agregar a inicio"</strong>.
+    </section>
+
     <section class="card mb-4">
       <div class="card-body">
         <h2 class="h5 card-title">Nueva Incidencia</h2>

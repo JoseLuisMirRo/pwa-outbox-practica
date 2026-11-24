@@ -4,14 +4,16 @@
 // Mini-wrapper de IndexedDB dentro del contexto del Service Worker
 importScripts('./db-helper.js');
 
-const CACHE_STATIC_NAME = 'static-outbox-v2';
+const CACHE_STATIC_NAME = 'static-outbox-v3'; // v3: íconos + ajustes para iOS
 const STATIC_FILES = [
   './',
   './index.html',
   './styles.css',
   './db-helper.js',
   './app.js',
-  './manifest.json'
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
 const ENDPOINT = 'https://jsonplaceholder.typicode.com/posts';

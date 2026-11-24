@@ -140,7 +140,16 @@ function procesarEnvioReporte(datosFormulario){
 
 /* ---------- UPDATE: reenvío desde la UI (solo sin SyncManager) ---------- */
 
+// [iOS] Candado contra barridos simultáneos.
+// En iPhone este barrido se puede disparar por tres caminos ('online', 'visibilitychange' y la carga
+// inicial). Si dos coinciden, ambos leerían los mismos 'pendiente' y enviarían cada POST dos veces.
+let sincronizandoFallback = false;
+
 function sincronizarPendientesFallback(){
+  // [iOS] Si ya hay un barrido en curso, no se inicia otro
+  if (sincronizandoFallback) return Promise.resolve();
+  sincronizandoFallback = true;
+
   console.log('[Outbox] Conexión detectada. Buscando registros pendientes...');
 
   return obtenerTodosLosRegistros()
@@ -172,6 +181,11 @@ function sincronizarPendientesFallback(){
     })
     .catch((error) => {
       console.error('[Outbox] Error durante la sincronización masiva:', error);
+    })
+    .finally(() => {
+      // [iOS] Se libera en finally (no en then): si un POST falla, el candado debe abrirse igual,
+      // si no, la app nunca volvería a sincronizar
+      sincronizandoFallback = false;
     });
 }
 
@@ -225,7 +239,46 @@ window.addEventListener('online', () => {
 
 window.addEventListener('offline', actualizarIndicadorRed);
 
+/* ---------- [iOS] Safari no tiene Background Sync: reintento al abrir / volver ---------- */
+
+// [iOS] Problema: el evento 'online' es un CAMBIO (offline → online), no un estado.
+// Solo llega si la app está abierta justo cuando vuelve la red. Si el usuario cerró la app
+// sin conexión y la abre ya con internet, 'online' nunca se dispara y los reportes se
+// quedarían en 'pendiente' para siempre.
+// Solución: consultar el ESTADO navigator.onLine al abrir la app y al volver a ella.
+function reintentarSiHaceFalta(){
+  // [iOS] !SyncManager → solo Safari/iOS (y Firefox). En Chrome no hace nada porque ahí
+  // sincroniza sw.js; si también lo hiciera la página, cada POST se enviaría dos veces.
+  if (!('SyncManager' in window) && navigator.onLine) {
+    sincronizarPendientesFallback();
+  }
+}
+
+// [iOS] Al cambiar de app, iOS congela la página y no recibe 'online'.
+// Cuando el usuario regresa (document.hidden === false) se revisa si hay pendientes.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) reintentarSiHaceFalta();
+});
+
+/* ---------- [iOS] No existe beforeinstallprompt → guía manual de instalación ---------- */
+
+// [iOS] Muestra "Compartir → Agregar a inicio" solo en iPhone/iPad y si aún no está instalada
+function verificarEntornoIOS(){
+  // iPadOS 13+ se presenta como "Macintosh"; se distingue por tener pantalla táctil
+  const esIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const estaInstalada = window.navigator.standalone === true ||
+                        window.matchMedia('(display-mode: standalone)').matches;
+
+  if (esIOS && !estaInstalada) {
+    const guiaIOS = document.getElementById('instrucciones-ios');
+    if (guiaIOS) guiaIOS.hidden = false;
+  }
+}
+
 /* ---------- Inicio ---------- */
 
 actualizarIndicadorRed();
 renderizarColaOutbox();
+verificarEntornoIOS();      // [iOS] guía de instalación
+reintentarSiHaceFalta();    // [iOS] envía pendientes si la app se abre ya con internet
